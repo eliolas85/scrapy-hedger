@@ -128,7 +128,7 @@ async function fetchDataPlus500(page, asset) {
 
 async function scrapeAsset(asset) {
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: "new",
     args: ["--no-sandbox"],
     executablePath: "/usr/bin/google-chrome",
   });
