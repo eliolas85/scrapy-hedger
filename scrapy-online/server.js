@@ -196,12 +196,16 @@ async function scrapeAsset(asset) {
   });
   const page = await browser.newPage();
 
-  if (["btc", "eth", "xrp", "ltc", "bch", "eos"].includes(asset)) {
+  if (
+    ["eurusd", "audusd", "gbpusd", "nzdusd", "usdjpy", "natgas"].includes(asset)
+  ) {
     await page.goto(`https://www.etoro.com/it/markets/${asset}/chart`);
     await fetchDataEtoro(page, asset);
   }
 
-  if (["BTCUSD", "ETHUSD"].includes(asset)) {
+  if (
+    ["EURUSD", "AUDUSD", "gbpusd", "nzdusd", "usdjpy", "natgas"].includes(asset)
+  ) {
     await page.goto(`https://www.plus500.com/it/Instruments/${asset}`);
     await fetchDataPlus500(page, asset);
   }
