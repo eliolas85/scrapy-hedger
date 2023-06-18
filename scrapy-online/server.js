@@ -3,10 +3,8 @@ const express = require("express");
 const WebSocket = require("ws");
 const puppeteer = require("puppeteer");
 const fs = require("fs");
-const cors = require("cors");
 
 const app = express();
-app.use(cors());
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true });
 
@@ -18,6 +16,7 @@ wss.on("connection", function connection(ws) {
     let parsedMessage = JSON.parse(message);
     let key = parsedMessage.broker + ":" + parsedMessage.symbol;
 
+    // Memorizza i dati in arrivo nel buffer anziché elaborarli immediatamente
     buffer[key] = {
       ...parsedMessage,
       updatedAt: new Date().toISOString(),
@@ -25,67 +24,14 @@ wss.on("connection", function connection(ws) {
   });
 });
 
+// Elabora i dati del buffer ogni secondo
 setInterval(() => {
   unifiedData = { ...unifiedData, ...buffer };
-  buffer = {};
+  buffer = {}; // Pulisci il buffer
 }, 1000);
 
 app.get("/data", (req, res) => {
-  res.json(unifiedData);
-});
-
-app.get("/calculate", (req, res) => {
-  const assetsMap = {};
-
-  for (let key in unifiedData) {
-    const { symbol, bid, ask, broker } = unifiedData[key];
-    if (!assetsMap[symbol]) {
-      assetsMap[symbol] = [];
-    }
-    assetsMap[symbol].push({
-      broker,
-      bid,
-      ask,
-    });
-  }
-
-  const results = [];
-
-  for (let asset in assetsMap) {
-    const assetData = assetsMap[asset];
-    if (assetData.length > 1) {
-      const [broker1Data, broker2Data] = assetData;
-      const spread1 = broker1Data.bid - broker1Data.ask;
-      const spread2 = broker2Data.bid - broker2Data.ask;
-
-      const averagePrice1 = (broker1Data.bid + broker1Data.ask) / 2;
-      const averagePrice2 = (broker2Data.bid + broker2Data.ask) / 2;
-
-      const averageSpread1 = (broker1Data.bid - broker1Data.ask) / 2;
-      const averageSpread2 = (broker2Data.bid - broker2Data.ask) / 2;
-
-      const hedge_Ratio = broker1Data.bid / broker2Data.bid;
-
-      const weightedHedgeRatio =
-        (averagePrice1 - averageSpread1) / (averagePrice2 - averageSpread2);
-
-      results.push({
-        asset,
-        broker_1: broker1Data.broker,
-        broker_1_Bid: broker1Data.bid,
-        broker_1_Ask: broker1Data.ask,
-        broker_1_Spread: spread1,
-        broker_2: broker2Data.broker,
-        broker_2_Bid: broker2Data.bid,
-        broker_2_Ask: broker2Data.ask,
-        broker_2_Spread: spread2,
-        hedge_Ratio,
-        weighted_Hedge_Ratio: weightedHedgeRatio,
-      });
-    }
-  }
-
-  res.json(results);
+  res.json(unifiedData); // Restituisci i dati ricevuti come JSON
 });
 
 server.on("upgrade", function upgrade(request, socket, head) {
@@ -98,8 +44,8 @@ server.listen(8080, function listening() {
   console.log("Node.js server listening on port 8080");
 });
 
-const updateFrequency = 5000;
-const assets = ["btc", "eth", "xrp", "ltc", "bch", "eos", "BTCUSD", "ETHUSD"];
+const updateFrequency = 5000; // Milliseconds. Modify this value to adjust the update frequency
+const assets = ["btc", "eth", "xrp", "ltc", "bch", "eos", "BTCUSD", "ETHUSD"]; // Insert the desired assets here
 
 async function fetchDataEtoro(page, asset) {
   const brokerName = "Etoro";
@@ -146,7 +92,7 @@ async function fetchDataPlus500(page, asset) {
   await page.evaluate(() => window.scrollBy(0, window.innerHeight));
   await page.waitForTimeout(2000);
   await page.waitForSelector(".instrument-button, .inst-name, .title-price", {
-    timeout: 60000,
+    timeout: 60000000,
   });
 
   const data = await page.evaluate((broker) => {
@@ -159,8 +105,8 @@ async function fetchDataPlus500(page, asset) {
     );
 
     return nameElements.map((element, index) => {
-      const ask = parseFloat(bidElements[index]?.textContent || 0);
-      const bid = parseFloat(askElements[index]?.textContent || 0);
+      const bid = parseFloat(bidElements[index]?.textContent || 0);
+      const ask = parseFloat(askElements[index]?.textContent || 0);
 
       return {
         symbol: element.textContent.trim(),
@@ -181,11 +127,7 @@ async function fetchDataPlus500(page, asset) {
 }
 
 async function scrapeAsset(asset) {
-  const browser = await puppeteer.launch({
-    headless: "new",
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    executablePath: "/usr/bin/google-chrome", // Aggiungi questo
-  });
+  const browser = await puppeteer.launch({ headless: "new" });
   const page = await browser.newPage();
 
   if (["btc", "eth", "xrp", "ltc", "bch", "eos"].includes(asset)) {
