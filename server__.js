@@ -192,7 +192,7 @@ async function scrapeAsset(asset) {
   const browser = await puppeteer.launch({
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
     executablePath: process.env.GOOGLE_CHROME_BIN || null,
-    headless: "true", // Il browser viene eseguito in modalità headless su Heroku
+    headless: "new", // Il browser viene eseguito in modalità headless su Heroku
   });
   const page = await browser.newPage();
 
