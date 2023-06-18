@@ -1,17 +1,108 @@
+const http = require("http");
 const express = require("express");
+const WebSocket = require("ws");
 const puppeteer = require("puppeteer");
-const cors = require("cors");
+const fs = require("fs");
+const cors = require("cors"); // Aggiungi questa linea
 
 const app = express();
-app.use(cors());
+app.use(cors()); // E questa linea
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ noServer: true });
 
 let unifiedData = {};
+let buffer = {};
 
-app.get("/data", (req, res) => {
-  res.json(unifiedData);
+wss.on("connection", function connection(ws) {
+  ws.on("message", function incoming(message) {
+    let parsedMessage = JSON.parse(message);
+    let key = parsedMessage.broker + ":" + parsedMessage.symbol;
+
+    // Memorizza i dati in arrivo nel buffer anziché elaborarli immediatamente
+    buffer[key] = {
+      ...parsedMessage,
+      updatedAt: new Date().toISOString(),
+    };
+  });
 });
 
-app.listen(process.env.PORT || 8080, function listening() {
+// Elabora i dati del buffer ogni secondo
+setInterval(() => {
+  unifiedData = { ...unifiedData, ...buffer };
+  buffer = {}; // Pulisci il buffer
+}, 1000);
+
+app.get("/data", (req, res) => {
+  res.json(unifiedData); // Restituisci i dati ricevuti come JSON
+});
+
+app.get("/calculate", (req, res) => {
+  const assetsMap = {};
+
+  // Organizza i dati per asset e broker
+  for (let key in unifiedData) {
+    const { symbol, bid, ask, broker } = unifiedData[key];
+    if (!assetsMap[symbol]) {
+      assetsMap[symbol] = [];
+    }
+    assetsMap[symbol].push({
+      broker,
+      bid,
+      ask,
+    });
+  }
+
+  const results = [];
+
+  // Calcola gli indicatori per ogni asset
+  // Calcola gli indicatori per ogni asset
+  for (let asset in assetsMap) {
+    const assetData = assetsMap[asset];
+    if (assetData.length > 1) {
+      const [broker1Data, broker2Data] = assetData;
+      const spread1 = broker1Data.bid - broker1Data.ask;
+      const spread2 = broker2Data.bid - broker2Data.ask;
+
+      // calcola prezzo medio per ogni broker
+      const averagePrice1 = (broker1Data.bid + broker1Data.ask) / 2;
+      const averagePrice2 = (broker2Data.bid + broker2Data.ask) / 2;
+
+      // calcola spread medio
+      const averageSpread1 = (broker1Data.bid - broker1Data.ask) / 2;
+      const averageSpread2 = (broker2Data.bid - broker2Data.ask) / 2;
+
+      const hedge_Ratio = broker1Data.bid / broker2Data.bid;
+
+      // calcola hedge ratio pesato
+      const weightedHedgeRatio =
+        (averagePrice1 - averageSpread1) / (averagePrice2 - averageSpread2);
+
+      results.push({
+        asset,
+        broker_1: broker1Data.broker,
+        broker_1_Bid: broker1Data.bid,
+        broker_1_Ask: broker1Data.ask,
+        broker_1_Spread: spread1,
+        broker_2: broker2Data.broker,
+        broker_2_Bid: broker2Data.bid,
+        broker_2_Ask: broker2Data.ask,
+        broker_2_Spread: spread2,
+        hedge_Ratio,
+        weighted_Hedge_Ratio: weightedHedgeRatio,
+      });
+    }
+  }
+
+  res.json(results);
+});
+
+server.on("upgrade", function upgrade(request, socket, head) {
+  wss.handleUpgrade(request, socket, head, function done(ws) {
+    wss.emit("connection", ws, request);
+  });
+});
+
+server.listen(process.env.PORT || 8080, function listening() {
   console.log(`Server listening on port ${process.env.PORT || 8080}`);
 });
 
@@ -101,7 +192,7 @@ async function scrapeAsset(asset) {
   const browser = await puppeteer.launch({
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
     executablePath: process.env.GOOGLE_CHROME_BIN || null,
-    headless: true,
+    headless: "new", // Il browser viene eseguito in modalità headless su Heroku
   });
   const page = await browser.newPage();
 
