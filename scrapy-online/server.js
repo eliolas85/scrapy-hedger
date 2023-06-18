@@ -129,8 +129,9 @@ async function fetchDataPlus500(page, asset) {
 async function scrapeAsset(asset) {
   const browser = await puppeteer.launch({
     headless: true,
-    executablePath: "/usr/bin/google-chrome-stable", // Aggiungi questa riga
+    args: ["--no-sandbox"],
   });
+
   const page = await browser.newPage();
 
   if (["btc", "eth", "xrp", "ltc", "bch", "eos"].includes(asset)) {
