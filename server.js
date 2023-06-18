@@ -102,8 +102,8 @@ server.on("upgrade", function upgrade(request, socket, head) {
   });
 });
 
-server.listen(8080, function listening() {
-  console.log("Node.js server listening on port 8080");
+server.listen(process.env.PORT || 8080, function listening() {
+  console.log(`Server listening on port ${process.env.PORT || 8080}`);
 });
 
 const updateFrequency = 5000; // Milliseconds. Modify this value to adjust the update frequency
