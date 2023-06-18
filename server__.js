@@ -189,7 +189,11 @@ async function fetchDataPlus500(page, asset) {
 }
 
 async function scrapeAsset(asset) {
-  const browser = await puppeteer.launch({ headless: "true" });
+  const browser = await puppeteer.launch({
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    executablePath: process.env.GOOGLE_CHROME_BIN || null,
+    headless: "new", // Il browser viene eseguito in modalità headless su Heroku
+  });
   const page = await browser.newPage();
 
   if (["btc", "eth", "xrp", "ltc", "bch", "eos"].includes(asset)) {
