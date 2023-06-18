@@ -37,6 +37,7 @@ app.get("/data", (req, res) => {
 app.get("/calculate", (req, res) => {
   const assetsMap = {};
 
+  // Organizza i dati per asset e broker
   for (let key in unifiedData) {
     const { symbol, bid, ask, broker } = unifiedData[key];
     if (!assetsMap[symbol]) {
@@ -51,33 +52,46 @@ app.get("/calculate", (req, res) => {
 
   const results = [];
 
+  // Calcola gli indicatori per ogni combinazione di broker
   for (let asset in assetsMap) {
     const assetData = assetsMap[asset];
     if (assetData.length > 1) {
-      const [broker1Data, broker2Data] = assetData;
-      const spread1 = broker1Data.bid - broker1Data.ask;
-      const spread2 = broker2Data.bid - broker2Data.ask;
-      const averagePrice1 = (broker1Data.bid + broker1Data.ask) / 2;
-      const averagePrice2 = (broker2Data.bid + broker2Data.ask) / 2;
-      const averageSpread1 = (broker1Data.bid - broker1Data.ask) / 2;
-      const averageSpread2 = (broker2Data.bid - broker2Data.ask) / 2;
-      const hedge_Ratio = broker1Data.bid / broker2Data.bid;
-      const weightedHedgeRatio =
-        (averagePrice1 - averageSpread1) / (averagePrice2 - averageSpread2);
+      for (let i = 0; i < assetData.length - 1; i++) {
+        const broker1Data = assetData[i];
+        for (let j = i + 1; j < assetData.length; j++) {
+          const broker2Data = assetData[j];
+          const spread1 = broker1Data.bid - broker1Data.ask;
+          const spread2 = broker2Data.bid - broker2Data.ask;
 
-      results.push({
-        asset,
-        broker_1: broker1Data.broker,
-        broker_1_Bid: broker1Data.bid,
-        broker_1_Ask: broker1Data.ask,
-        broker_1_Spread: spread1,
-        broker_2: broker2Data.broker,
-        broker_2_Bid: broker2Data.bid,
-        broker_2_Ask: broker2Data.ask,
-        broker_2_Spread: spread2,
-        hedge_Ratio,
-        weighted_Hedge_Ratio: weightedHedgeRatio,
-      });
+          // Calcola prezzo medio per ogni broker
+          const averagePrice1 = (broker1Data.bid + broker1Data.ask) / 2;
+          const averagePrice2 = (broker2Data.bid + broker2Data.ask) / 2;
+
+          // Calcola spread medio
+          const averageSpread1 = (broker1Data.bid - broker1Data.ask) / 2;
+          const averageSpread2 = (broker2Data.bid - broker2Data.ask) / 2;
+
+          const hedge_Ratio = broker1Data.bid / broker2Data.bid;
+
+          // Calcola hedge ratio pesato
+          const weightedHedgeRatio =
+            (averagePrice1 - averageSpread1) / (averagePrice2 - averageSpread2);
+
+          results.push({
+            asset,
+            broker_1: broker1Data.broker,
+            broker_1_Bid: broker1Data.bid,
+            broker_1_Ask: broker1Data.ask,
+            broker_1_Spread: spread1,
+            broker_2: broker2Data.broker,
+            broker_2_Bid: broker2Data.bid,
+            broker_2_Ask: broker2Data.ask,
+            broker_2_Spread: spread2,
+            hedge_Ratio,
+            weighted_Hedge_Ratio: weightedHedgeRatio,
+          });
+        }
+      }
     }
   }
 
