@@ -3,10 +3,10 @@ const express = require("express");
 const WebSocket = require("ws");
 const puppeteer = require("puppeteer");
 const fs = require("fs");
-const cors = require("cors"); // Aggiungi questa linea
+const cors = require("cors");
 
 const app = express();
-app.use(cors()); // E questa linea
+app.use(cors());
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true });
 
@@ -18,7 +18,6 @@ wss.on("connection", function connection(ws) {
     let parsedMessage = JSON.parse(message);
     let key = parsedMessage.broker + ":" + parsedMessage.symbol;
 
-    // Memorizza i dati in arrivo nel buffer anziché elaborarli immediatamente
     buffer[key] = {
       ...parsedMessage,
       updatedAt: new Date().toISOString(),
@@ -26,20 +25,18 @@ wss.on("connection", function connection(ws) {
   });
 });
 
-// Elabora i dati del buffer ogni secondo
 setInterval(() => {
   unifiedData = { ...unifiedData, ...buffer };
-  buffer = {}; // Pulisci il buffer
+  buffer = {};
 }, 1000);
 
 app.get("/data", (req, res) => {
-  res.json(unifiedData); // Restituisci i dati ricevuti come JSON
+  res.json(unifiedData);
 });
 
 app.get("/calculate", (req, res) => {
   const assetsMap = {};
 
-  // Organizza i dati per asset e broker
   for (let key in unifiedData) {
     const { symbol, bid, ask, broker } = unifiedData[key];
     if (!assetsMap[symbol]) {
@@ -54,26 +51,17 @@ app.get("/calculate", (req, res) => {
 
   const results = [];
 
-  // Calcola gli indicatori per ogni asset
-  // Calcola gli indicatori per ogni asset
   for (let asset in assetsMap) {
     const assetData = assetsMap[asset];
     if (assetData.length > 1) {
       const [broker1Data, broker2Data] = assetData;
       const spread1 = broker1Data.bid - broker1Data.ask;
       const spread2 = broker2Data.bid - broker2Data.ask;
-
-      // calcola prezzo medio per ogni broker
       const averagePrice1 = (broker1Data.bid + broker1Data.ask) / 2;
       const averagePrice2 = (broker2Data.bid + broker2Data.ask) / 2;
-
-      // calcola spread medio
       const averageSpread1 = (broker1Data.bid - broker1Data.ask) / 2;
       const averageSpread2 = (broker2Data.bid - broker2Data.ask) / 2;
-
       const hedge_Ratio = broker1Data.bid / broker2Data.bid;
-
-      // calcola hedge ratio pesato
       const weightedHedgeRatio =
         (averagePrice1 - averageSpread1) / (averagePrice2 - averageSpread2);
 
@@ -106,8 +94,8 @@ server.listen(8080, function listening() {
   console.log("Node.js server listening on port 8080");
 });
 
-const updateFrequency = 5000; // Milliseconds. Modify this value to adjust the update frequency
-const assets = ["eurusd", "audusd", "gbpusd", "nzdusd", "usdjpy", "natgas"]; // Insert the desired assets here
+const updateFrequency = 5000;
+const assets = ["eurusd", "audusd", "gbpusd", "nzdusd", "usdjpy", "natgas"];
 
 async function fetchDataEtoro(page, asset) {
   const brokerName = "Etoro";
@@ -130,9 +118,11 @@ async function fetchDataEtoro(page, asset) {
       const priceText = priceElements[index]?.textContent || "";
       const bid = parseFloat(priceText.match(/B\s*([\d.]+)/)?.[1] || 0);
       const ask = parseFloat(priceText.match(/S\s*([\d.]+)/)?.[1] || 0);
+      let symbol = element.textContent.trim();
+      symbol = symbol.replace("/", "");
 
       return {
-        symbol: element.textContent.trim(),
+        symbol,
         bid,
         ask,
         broker,
@@ -169,9 +159,11 @@ async function fetchDataPlus500(page, asset) {
     return nameElements.map((element, index) => {
       const ask = parseFloat(bidElements[index]?.textContent || 0);
       const bid = parseFloat(askElements[index]?.textContent || 0);
+      let symbol = element.textContent.trim();
+      symbol = symbol.replace("/", "");
 
       return {
-        symbol: element.textContent.trim(),
+        symbol,
         bid,
         ask,
         broker,
@@ -210,7 +202,7 @@ async function scrapeAsset(asset) {
     await fetchDataPlus500(page, asset);
   }
 }
-/* */
+
 async function scrapeAllAssets(assets) {
   for (let asset of assets) {
     await scrapeAsset(asset);
