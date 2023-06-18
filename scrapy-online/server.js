@@ -8,6 +8,8 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true });
 
+const time_out = "20000";
+
 let unifiedData = {};
 let buffer = {};
 
@@ -28,7 +30,7 @@ wss.on("connection", function connection(ws) {
 setInterval(() => {
   unifiedData = { ...unifiedData, ...buffer };
   buffer = {}; // Pulisci il buffer
-}, 1000);
+}, 5000);
 
 app.get("/data", (req, res) => {
   res.json(unifiedData); // Restituisci i dati ricevuti come JSON
@@ -40,11 +42,7 @@ server.on("upgrade", function upgrade(request, socket, head) {
   });
 });
 
-server.listen(8080, function listening() {
-  console.log("Node.js server listening on port 8080");
-});
-
-const updateFrequency = 500000; // Milliseconds. Modify this value to adjust the update frequency
+const updateFrequency = 5000; // Milliseconds. Modify this value to adjust the update frequency
 const assets = ["btc", "eth", "xrp", "ltc", "bch", "eos", "BTCUSD", "ETHUSD"]; // Insert the desired assets here
 
 async function fetchDataEtoro(page, asset) {
@@ -53,7 +51,7 @@ async function fetchDataEtoro(page, asset) {
   await page.waitForTimeout(2000);
   await page.waitForSelector(
     ".buy-sell-indicators, .mobile-instrument-name-fullname",
-    { timeout: 60000000 }
+    { timeout: time_out }
   );
 
   const data = await page.evaluate((broker) => {
@@ -92,7 +90,7 @@ async function fetchDataPlus500(page, asset) {
   await page.evaluate(() => window.scrollBy(0, window.innerHeight));
   await page.waitForTimeout(2000);
   await page.waitForSelector(".instrument-button, .inst-name, .title-price", {
-    timeout: 60000000,
+    timeout: time_out,
   });
 
   const data = await page.evaluate((broker) => {
@@ -152,4 +150,7 @@ async function scrapeAllAssets(assets) {
   }
 }
 
+server.listen(8080, function listening() {
+  console.log("Node.js server listening on port 8080");
+});
 scrapeAllAssets(assets);
