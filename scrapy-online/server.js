@@ -44,7 +44,7 @@ server.listen(8080, function listening() {
   console.log("Node.js server listening on port 8080");
 });
 
-const updateFrequency = 5000; // Milliseconds. Modify this value to adjust the update frequency
+const updateFrequency = 500000; // Milliseconds. Modify this value to adjust the update frequency
 const assets = ["btc", "eth", "xrp", "ltc", "bch", "eos", "BTCUSD", "ETHUSD"]; // Insert the desired assets here
 
 async function fetchDataEtoro(page, asset) {
@@ -53,7 +53,7 @@ async function fetchDataEtoro(page, asset) {
   await page.waitForTimeout(2000);
   await page.waitForSelector(
     ".buy-sell-indicators, .mobile-instrument-name-fullname",
-    { timeout: 60000 }
+    { timeout: 60000000 }
   );
 
   const data = await page.evaluate((broker) => {
