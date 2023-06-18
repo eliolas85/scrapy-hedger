@@ -107,7 +107,7 @@ server.listen(8080, function listening() {
 });
 
 const updateFrequency = 5000; // Milliseconds. Modify this value to adjust the update frequency
-const assets = ["btc", "eth", "xrp", "ltc", "bch", "eos", "BTCUSD", "ETHUSD"]; // Insert the desired assets here
+const assets = ["eurusd", "audusd", "gbpusd", "nzdusd", "usdjpy", "natgas"]; // Insert the desired assets here
 
 async function fetchDataEtoro(page, asset) {
   const brokerName = "Etoro";
@@ -204,7 +204,7 @@ async function scrapeAsset(asset) {
   }
 
   if (
-    ["EURUSD", "AUDUSD", "gbpusd", "nzdusd", "usdjpy", "natgas"].includes(asset)
+    ["eurusd", "audusd", "gbpusd", "nzdusd", "usdjpy", "natgas"].includes(asset)
   ) {
     await page.goto(`https://www.plus500.com/it/Instruments/${asset}`);
     await fetchDataPlus500(page, asset);
