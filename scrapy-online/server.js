@@ -206,7 +206,7 @@ async function scrapeAsset(asset) {
     await fetchDataPlus500(page, asset);
   }
 }
-
+/* */
 async function scrapeAllAssets(assets) {
   for (let asset of assets) {
     await scrapeAsset(asset);
