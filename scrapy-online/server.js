@@ -56,9 +56,10 @@ app.get("/calculate", (req, res) => {
   for (let asset in assetsMap) {
     const assetData = assetsMap[asset];
     if (assetData.length > 1) {
-      for (let i = 0; i < assetData.length - 1; i++) {
+      for (let i = 0; i < assetData.length; i++) {
         const broker1Data = assetData[i];
-        for (let j = i + 1; j < assetData.length; j++) {
+        for (let j = 0; j < assetData.length; j++) {
+          if (i === j) continue; // Evita di confrontare lo stesso broker con se stesso
           const broker2Data = assetData[j];
           const spread1 = broker1Data.bid - broker1Data.ask;
           const spread2 = broker2Data.bid - broker2Data.ask;
