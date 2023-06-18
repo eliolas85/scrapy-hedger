@@ -208,9 +208,7 @@ async function scrapeAsset(asset) {
 }
 
 async function scrapeAllAssets(assets) {
-  for (let asset of assets) {
-    await scrapeAsset(asset);
-  }
+  await Promise.all(assets.map((asset) => scrapeAsset(asset)));
 }
 
 scrapeAllAssets(assets);
