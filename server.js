@@ -192,7 +192,7 @@ async function scrapeAsset(asset) {
   const browser = await puppeteer.launch({
     headless: "new",
     args: ["--no-sandbox"],
-    executablePath: "/usr/bin/google-chrome",
+    executablePath: "/app/.apt/usr/bin/google-chrome",
   });
   const page = await browser.newPage();
 
