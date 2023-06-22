@@ -1,3 +1,6 @@
+// bid = prezzo di acquisto
+// ask = prezzo di vendita
+
 const http = require("http");
 const express = require("express");
 const WebSocket = require("ws");
@@ -61,22 +64,41 @@ app.get("/calculate", (req, res) => {
         for (let j = 0; j < assetData.length; j++) {
           if (i === j) continue; // Evita di confrontare lo stesso broker con se stesso
           const broker2Data = assetData[j];
-          const spread1 = broker1Data.bid - broker1Data.ask;
-          const spread2 = broker2Data.bid - broker2Data.ask;
-
-          // Calcola prezzo medio per ogni broker
-          const averagePrice1 = (broker1Data.bid + broker1Data.ask) / 2;
-          const averagePrice2 = (broker2Data.bid + broker2Data.ask) / 2;
-
-          // Calcola spread medio
-          const averageSpread1 = (broker1Data.bid - broker1Data.ask) / 2;
-          const averageSpread2 = (broker2Data.bid - broker2Data.ask) / 2;
-
+          const spread1 = Math.abs(broker1Data.bid - broker1Data.ask);
+          const spread2 = Math.abs(broker2Data.bid - broker2Data.ask);
           const hedge_Ratio = broker1Data.bid / broker2Data.bid;
 
-          // Calcola hedge ratio pesato
-          const weightedHedgeRatio =
-            (averagePrice1 - averageSpread1) / (averagePrice2 - averageSpread2);
+          // Calcola il valore del pip in base alla tipologia dell'asset
+          let pipValue1, pipValue2;
+          if (asset.includes("JPY")) {
+            // Valuta indiretta
+            pipValue1 = 0.01 / broker1Data.bid;
+            pipValue2 = 0.01 / broker2Data.bid;
+          } else if (asset === "XAUUSD") {
+            // Oro
+            pipValue1 = 0.01 / broker1Data.bid;
+            pipValue2 = 0.01 / broker2Data.bid;
+          } else if (asset === "SP500") {
+            // Indice S&P 500
+            pipValue1 = 0.1 / broker1Data.bid;
+            pipValue2 = 0.1 / broker2Data.bid;
+          } else {
+            // Valuta diretta
+            pipValue1 = 0.0001 / broker1Data.bid;
+            pipValue2 = 0.0001 / broker2Data.bid;
+          }
+
+          // calcola il valore del pip per lotto, mini lotto e micro lotto
+          let pipValuePerStandardLot1 = pipValue1 * 100000;
+          let pipValuePerMiniLot1 = pipValue1 * 10000;
+          let pipValuePerMicroLot1 = pipValue1 * 1000;
+
+          let pipValuePerStandardLot2 = pipValue2 * 100000;
+          let pipValuePerMiniLot2 = pipValue2 * 10000;
+          let pipValuePerMicroLot2 = pipValue2 * 1000;
+
+          const spreadInPips1 = spread1 / (pipValue1 * broker1Data.bid);
+          const spreadInPips2 = spread2 / (pipValue2 * broker2Data.bid);
 
           results.push({
             asset,
@@ -84,18 +106,24 @@ app.get("/calculate", (req, res) => {
             broker_1_Bid: broker1Data.bid,
             broker_1_Ask: broker1Data.ask,
             broker_1_Spread: spread1,
+            broker_1_Spread_InPips: spreadInPips1,
+            broker_1_PipValue_PerStandardLot: pipValuePerStandardLot1,
+            broker_1_PipValue_PerMiniLot: pipValuePerMiniLot1,
+            broker_1_PipValue_PerMicroLot: pipValuePerMicroLot1,
             broker_2: broker2Data.broker,
             broker_2_Bid: broker2Data.bid,
             broker_2_Ask: broker2Data.ask,
             broker_2_Spread: spread2,
+            broker_2_Spread_InPips: spreadInPips2,
+            broker_2_PipValue_PerStandardLot: pipValuePerStandardLot2,
+            broker_2_PipValue_PerMiniLot: pipValuePerMiniLot2,
+            broker_2_PipValue_PerMicroLot: pipValuePerMicroLot2,
             hedge_Ratio,
-            weighted_Hedge_Ratio: weightedHedgeRatio,
           });
         }
       }
     }
   }
-
   res.json(results);
 });
 
@@ -110,7 +138,22 @@ server.listen(8080, function listening() {
 });
 
 const updateFrequency = 5000;
-const assets = ["eurusd", "audusd", "gbpusd", "nzdusd", "usdjpy", "natgas"];
+const etoroAssets = [
+  "eurusd",
+  "audusd",
+  "gbpusd",
+  "nzdusd",
+  "usdjpy",
+  "natgas",
+];
+const plus500Assets = [
+  "eurusd",
+  "audusd",
+  "gbpusd",
+  "nzdusd",
+  "usdjpy",
+  "natgas",
+];
 
 async function fetchDataEtoro(page, asset) {
   const brokerName = "Etoro";
@@ -118,7 +161,7 @@ async function fetchDataEtoro(page, asset) {
   await page.waitForTimeout(2000);
   await page.waitForSelector(
     ".buy-sell-indicators, .mobile-instrument-name-fullname",
-    { timeout: 60000 }
+    { timeout: 12000 }
   );
 
   const data = await page.evaluate((broker) => {
@@ -159,7 +202,7 @@ async function fetchDataPlus500(page, asset) {
   await page.evaluate(() => window.scrollBy(0, window.innerHeight));
   await page.waitForTimeout(2000);
   await page.waitForSelector(".instrument-button, .inst-name, .title-price", {
-    timeout: 60000,
+    timeout: 6000,
   });
 
   const data = await page.evaluate((broker) => {
@@ -195,33 +238,38 @@ async function fetchDataPlus500(page, asset) {
   setTimeout(() => fetchDataPlus500(page, asset), updateFrequency);
 }
 
-async function scrapeAsset(asset) {
-  const browser = await puppeteer.launch({
-    headless: "new",
-    args: ["--no-sandbox"],
-    executablePath: "/usr/bin/google-chrome",
-  });
+async function scrapeAllAssets(etoroAssets, plus500Assets) {
+  const promises = [];
+
+  for (let asset of etoroAssets) {
+    promises.push(scrapeAssetEtoro(asset));
+  }
+
+  for (let asset of plus500Assets) {
+    promises.push(scrapeAssetPlus500(asset));
+  }
+
+  await Promise.all(promises);
+}
+
+async function scrapeAssetEtoro(asset) {
+  const browser = await puppeteer.launch({ headless: "new" });
   const page = await browser.newPage();
 
-  if (
-    ["eurusd", "audusd", "gbpusd", "nzdusd", "usdjpy", "natgas"].includes(asset)
-  ) {
+  if (etoroAssets.includes(asset)) {
     await page.goto(`https://www.etoro.com/it/markets/${asset}/chart`);
-    await fetchDataEtoro(page, asset);
+    return fetchDataEtoro(page, asset);
   }
+}
 
-  if (
-    ["eurusd", "audusd", "gbpusd", "nzdusd", "usdjpy", "natgas"].includes(asset)
-  ) {
+async function scrapeAssetPlus500(asset) {
+  const browser = await puppeteer.launch({ headless: "new" });
+  const page = await browser.newPage();
+
+  if (plus500Assets.includes(asset)) {
     await page.goto(`https://www.plus500.com/it/Instruments/${asset}`);
-    await fetchDataPlus500(page, asset);
+    return fetchDataPlus500(page, asset);
   }
 }
 
-async function scrapeAllAssets(assets) {
-  for (let asset of assets) {
-    await scrapeAsset(asset);
-  }
-}
-
-scrapeAllAssets(assets);
+scrapeAllAssets(etoroAssets, plus500Assets);
