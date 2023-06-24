@@ -21,7 +21,7 @@
       />
     </div>
     <div class="col-3 mb-3">
-      <label for="moneyInput" class="form-label">Inserisci importo</label>
+      <label for="moneyInput" class="form-label">Inserisci lottaggio</label>
       <input
         type="number"
         class="form-control"
@@ -38,11 +38,10 @@
         <th>Asset</th>
         <th>Nome Broker 1</th>
         <th>Prezzo Broker 1</th>
-        <th>Spread Broker 1</th>
         <th>Nome Broker 2</th>
         <th>Prezzo Broker 2</th>
-        <th>Spread Broker 2</th>
-        <th>Hedge Ratio Pesato</th>
+        <th>Spread broker 1</th>
+        <th>Spread broker 2</th>
         <th>Profitto/Perdita</th>
       </tr>
     </thead>
@@ -56,11 +55,14 @@
         <td>{{ trade.asset }}</td>
         <td>{{ trade.broker_1 }}</td>
         <td>{{ trade.broker_1_Bid }}</td>
-        <td>{{ trade.broker_1_Spread | number : "1.6-6" }}</td>
         <td>{{ trade.broker_2 }}</td>
         <td>{{ trade.broker_2_Bid }}</td>
-        <td>{{ trade.broker_2_Spread | number : "1.6-6" }}</td>
-        <td>{{ trade.weighted_Hedge_Ratio | number : "1.6-6" }}</td>
+        <td>
+          {{ calculateSpreadBroker1(trade, moneyAmount) | number : "1.6-6" }} €
+        </td>
+        <td>
+          {{ calculateSpreadBroker2(trade, moneyAmount) | number : "1.6-6" }} €
+        </td>
         <td>
           {{ calculateProfitLoss(trade, moneyAmount) | number : "1.6-6" }} €
         </td>

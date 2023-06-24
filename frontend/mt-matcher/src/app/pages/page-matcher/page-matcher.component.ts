@@ -48,7 +48,21 @@ export class PageMatcherComponent implements OnInit {
   calculateProfitLoss(trade: any, moneyAmount: any): number {
     // Implementa qui il tuo calcolo specifico del profitto/perdita.
     // Esempio:
-    return moneyAmount * trade.weighted_Hedge_Ratio - moneyAmount; // Questo è un esempio, dovrai adattarlo al tuo calcolo specifico
+    return (
+      -(trade.broker_1_coefficiente + trade.broker_2_coefficiente) * moneyAmount
+    ); // Questo è un esempio, dovrai adattarlo al tuo calcolo specifico
+  }
+
+  calculateSpreadBroker1(trade: any, moneyAmount: any): number {
+    // Implementa qui il tuo calcolo specifico del profitto/perdita.
+    // Esempio:
+    return -trade.broker_1_coefficiente * moneyAmount; // Questo è un esempio, dovrai adattarlo al tuo calcolo specifico
+  }
+
+  calculateSpreadBroker2(trade: any, moneyAmount: any): number {
+    // Implementa qui il tuo calcolo specifico del profitto/perdita.
+    // Esempio:
+    return -trade.broker_2_coefficiente * moneyAmount; // Questo è un esempio, dovrai adattarlo al tuo calcolo specifico
   }
 
   filterTrades() {

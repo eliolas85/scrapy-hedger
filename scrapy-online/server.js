@@ -100,6 +100,9 @@ app.get("/calculate", (req, res) => {
           const spreadInPips1 = spread1 / (pipValue1 * broker1Data.bid);
           const spreadInPips2 = spread2 / (pipValue2 * broker2Data.bid);
 
+          const coefficiente_broker1 = spreadInPips1 * pipValuePerStandardLot1;
+          const coefficiente_broker2 = spreadInPips2 * pipValuePerStandardLot2;
+
           results.push({
             asset,
             broker_1: broker1Data.broker,
@@ -108,16 +111,14 @@ app.get("/calculate", (req, res) => {
             broker_1_Spread: spread1,
             broker_1_Spread_InPips: spreadInPips1,
             broker_1_PipValue_PerStandardLot: pipValuePerStandardLot1,
-            broker_1_PipValue_PerMiniLot: pipValuePerMiniLot1,
-            broker_1_PipValue_PerMicroLot: pipValuePerMicroLot1,
+            broker_1_coefficiente: coefficiente_broker1,
             broker_2: broker2Data.broker,
             broker_2_Bid: broker2Data.bid,
             broker_2_Ask: broker2Data.ask,
             broker_2_Spread: spread2,
             broker_2_Spread_InPips: spreadInPips2,
             broker_2_PipValue_PerStandardLot: pipValuePerStandardLot2,
-            broker_2_PipValue_PerMiniLot: pipValuePerMiniLot2,
-            broker_2_PipValue_PerMicroLot: pipValuePerMicroLot2,
+            broker_2_coefficiente: coefficiente_broker2,
             hedge_Ratio,
           });
         }

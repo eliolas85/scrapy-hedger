@@ -10,4 +10,6 @@ export interface AssetInfo {
   broker_2_Spread: number;
   hedge_Ratio: number;
   weighted_Hedge_Ratio: number;
+  broker_1_coefficiente: number;
+  broker_2_coefficiente: number;
 }
