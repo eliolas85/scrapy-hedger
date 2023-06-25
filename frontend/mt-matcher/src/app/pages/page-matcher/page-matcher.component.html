@@ -40,6 +40,8 @@
         <th>Prezzo Broker 1</th>
         <th>Nome Broker 2</th>
         <th>Prezzo Broker 2</th>
+        <th>Margine richiesto broker 1</th>
+        <th>Margine richiesto broker 2</th>
         <th>Spread broker 1</th>
         <th>Spread broker 2</th>
         <th>Profitto/Perdita</th>
@@ -57,6 +59,12 @@
         <td>{{ trade.broker_1_Bid }}</td>
         <td>{{ trade.broker_2 }}</td>
         <td>{{ trade.broker_2_Bid }}</td>
+        <td>
+          {{ calculateMarginBroker1(trade, moneyAmount) | number : "1.2-2" }} €
+        </td>
+        <td>
+          {{ calculateMarginBroker2(trade, moneyAmount) | number : "1.2-2" }} €
+        </td>
         <td>
           {{ calculateSpreadBroker1(trade, moneyAmount) | number : "1.6-6" }} €
         </td>

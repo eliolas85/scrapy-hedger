@@ -12,4 +12,6 @@ export interface AssetInfo {
   weighted_Hedge_Ratio: number;
   broker_1_coefficiente: number;
   broker_2_coefficiente: number;
+  broker_1_valore_lotto: number;
+  broker_2_valore_lotto: number;
 }

@@ -54,15 +54,19 @@ export class PageMatcherComponent implements OnInit {
   }
 
   calculateSpreadBroker1(trade: any, moneyAmount: any): number {
-    // Implementa qui il tuo calcolo specifico del profitto/perdita.
-    // Esempio:
-    return -trade.broker_1_coefficiente * moneyAmount; // Questo è un esempio, dovrai adattarlo al tuo calcolo specifico
+    return -trade.broker_1_coefficiente * moneyAmount;
   }
 
   calculateSpreadBroker2(trade: any, moneyAmount: any): number {
-    // Implementa qui il tuo calcolo specifico del profitto/perdita.
-    // Esempio:
-    return -trade.broker_2_coefficiente * moneyAmount; // Questo è un esempio, dovrai adattarlo al tuo calcolo specifico
+    return -trade.broker_2_coefficiente * moneyAmount;
+  }
+
+  calculateMarginBroker1(trade: any, moneyAmount: any): number {
+    return (trade.broker_1_valore_lotto / 1) * moneyAmount;
+  }
+
+  calculateMarginBroker2(trade: any, moneyAmount: any): number {
+    return (trade.broker_2_valore_lotto / 1) * moneyAmount;
   }
 
   filterTrades() {
