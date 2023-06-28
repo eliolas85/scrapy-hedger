@@ -168,7 +168,11 @@ async function scrapeAllAssetsInSeries(etoroAssets, plus500Assets) {
 }
 
 async function scrapeAssetEtoro(asset) {
-  const browser = await puppeteer.launch({ headless: "new" });
+  const browser = await puppeteer.launch({
+    headless: "new",
+    args: ["--no-sandbox"],
+    executablePath: "/usr/bin/google-chrome",
+  });
   const page = await browser.newPage();
   await page.setCacheEnabled(false); // Aggiungi questa riga per disabilitare la cache.
 
@@ -179,7 +183,11 @@ async function scrapeAssetEtoro(asset) {
 }
 
 async function scrapeAssetPlus500(asset) {
-  const browser = await puppeteer.launch({ headless: "new" });
+  const browser = await puppeteer.launch({
+    headless: "new",
+    args: ["--no-sandbox"],
+    executablePath: "/usr/bin/google-chrome",
+  });
   const page = await browser.newPage();
   await page.setCacheEnabled(false); // Aggiungi questa riga per disabilitare la cache.
 
