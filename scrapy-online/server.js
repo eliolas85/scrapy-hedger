@@ -136,7 +136,7 @@ async function fetchDataPlus500(page, asset) {
       let symbol = element.textContent.trim();
       symbol = symbol.replace("/", "");
       symbol = symbol.replace("Gas Naturale", "NATGAS");
-      symbol = symbol.replace("CL", "CRUDEOIL");
+      symbol = symbol.replace("Petrolio", "CRUDEOIL");
 
       return {
         symbol,

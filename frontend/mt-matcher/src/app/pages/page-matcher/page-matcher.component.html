@@ -36,6 +36,7 @@
     <thead class="table-success">
       <tr>
         <th>Asset</th>
+        <th>Leva</th>
         <th>Nome Broker 1</th>
         <th>Prezzo Broker 1</th>
         <th>Nome Broker 2</th>
@@ -55,9 +56,10 @@
         "
       >
         <td>{{ trade.asset }}</td>
-        <td>{{ trade.broker_1 }}</td>
+        <td>{{ trade.leva_margine }}</td>
+        <td>{{ trade.broker_1_nome }}</td>
         <td>{{ trade.broker_1_Bid }}</td>
-        <td>{{ trade.broker_2 }}</td>
+        <td>{{ trade.broker_2_nome }}</td>
         <td>{{ trade.broker_2_Bid }}</td>
         <td>
           {{ calculateMarginBroker1(trade, moneyAmount) | number : "1.2-2" }} €

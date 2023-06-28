@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { AssetInfoService } from '../../api-services/asset-info.service'; // Modifica il percorso per corrispondere al tuo ambiente
-import { AssetInfo } from '../../api-services/asset-info.model'; // Modifica il percorso per corrispondere al tuo ambiente
+import { AssetInfoService } from '../../api-services/asset-info.service';
+import { AssetInfo } from '../../api-services/asset-info.model';
 import { interval } from 'rxjs';
 import { startWith, switchMap } from 'rxjs/operators';
 
@@ -15,50 +15,48 @@ export class PageMatcherComponent implements OnInit {
   filteredTrades: AssetInfo[] = [];
   filterBrokerControl = new FormControl();
   filterAssetControl = new FormControl();
-  page = 1; // Pagina corrente
-  pageSize = 10; // Numero di elementi per pagina
+  page = 1;
+  pageSize = 10;
 
   constructor(private assetInfoService: AssetInfoService) {}
 
   ngOnInit() {
-    // Si sottoscrive a un observable che emette un valore ogni x secondi
-    interval(5000) // Imposta l'intervallo in millisecondi, in questo caso 5 secondi
+    interval(5000)
       .pipe(
-        startWith(0), // Si avvia immediatamente
-        switchMap(() => this.assetInfoService.getAssetInfo()) // Ogni volta che l'observable emette un valore, fa una chiamata API
+        startWith(0),
+        switchMap(() => this.assetInfoService.getAssetInfo())
       )
       .subscribe((data) => {
         this.trades = data;
-        this.filteredTrades = data;
+        this.filterTrades(); // Effettua il filtraggio ogni volta che i dati vengono aggiornati
       });
 
     this.filterBrokerControl.valueChanges.subscribe(() => {
       this.filterTrades();
-      this.page = 1; // Resetta la pagina corrente quando il filtro cambia
+      this.page = 1;
     });
 
     this.filterAssetControl.valueChanges.subscribe(() => {
       this.filterTrades();
-      this.page = 1; // Resetta la pagina corrente quando il filtro cambia
+      this.page = 1;
     });
   }
 
   moneyAmount = 0;
 
   calculateProfitLoss(trade: any, moneyAmount: any): number {
-    // Implementa qui il tuo calcolo specifico del profitto/perdita.
-    // Esempio:
     return (
-      -(trade.broker_1_coefficiente + trade.broker_2_coefficiente) * moneyAmount
-    ); // Questo è un esempio, dovrai adattarlo al tuo calcolo specifico
+      -(trade.broker_1_valore_del_pip + trade.boroker_2_valore_del_pip) *
+      moneyAmount
+    );
   }
 
   calculateSpreadBroker1(trade: any, moneyAmount: any): number {
-    return -trade.broker_1_coefficiente * moneyAmount;
+    return trade.broker_1_valore_del_pip * moneyAmount;
   }
 
   calculateSpreadBroker2(trade: any, moneyAmount: any): number {
-    return -trade.broker_2_coefficiente * moneyAmount;
+    return trade.boroker_2_valore_del_pip * moneyAmount;
   }
 
   calculateMarginBroker1(trade: any, moneyAmount: any): number {
@@ -75,7 +73,9 @@ export class PageMatcherComponent implements OnInit {
     this.filteredTrades = this.trades.filter(
       (trade) =>
         (filterBroker
-          ? trade.broker_1.toLowerCase().includes(filterBroker.toLowerCase())
+          ? trade.broker_1_nome
+              .toLowerCase()
+              .includes(filterBroker.toLowerCase())
           : true) &&
         (filterAsset
           ? trade.asset.toLowerCase().includes(filterAsset.toLowerCase())

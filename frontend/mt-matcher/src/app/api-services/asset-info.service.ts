@@ -7,7 +7,7 @@ import { AssetInfo } from './asset-info.model'; // Modifica il percorso per corr
   providedIn: 'root',
 })
 export class AssetInfoService {
-  private apiUrl = 'http://localhost:8080/calculate';
+  private apiUrl = 'http://134.209.250.18:8080/calculate';
 
   constructor(private http: HttpClient) {}
 
