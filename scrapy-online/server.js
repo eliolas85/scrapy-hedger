@@ -34,7 +34,7 @@ setInterval(() => {
 //------------------------------------------------------------------------------
 // scraper inizio
 //------------------------------------------------------------------------------
-const updateFrequency = 5 * 60 * 1000; // 5 minuti in millisecondi;
+const updateFrequency = 1000; // 5 minuti in millisecondi;
 const etoroAssets = [
   "EURUSD",
   "NZDUSD",
@@ -170,7 +170,6 @@ async function scrapeAllAssetsInSeries(etoroAssets, plus500Assets) {
 async function scrapeAssetEtoro(asset) {
   const browser = await puppeteer.launch({
     headless: "new",
-    args: ["--no-sandbox"],
     executablePath: "/usr/bin/google-chrome",
   });
   const page = await browser.newPage();
@@ -185,7 +184,6 @@ async function scrapeAssetEtoro(asset) {
 async function scrapeAssetPlus500(asset) {
   const browser = await puppeteer.launch({
     headless: "new",
-    args: ["--no-sandbox"],
     executablePath: "/usr/bin/google-chrome",
   });
   const page = await browser.newPage();
