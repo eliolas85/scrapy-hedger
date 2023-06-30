@@ -30,6 +30,20 @@ const symbolMap = {
   "USDCAD.r": "USDCAD",
   "EURCHF.r": "EURCHF",
   "EURJPY.r": "EURJPY",
+  "NatGas.r": "NATGAS",
+  "SpotCrude.r": "CRUDEOIL",
+  "EURUSD.a": "EURUSD",
+  "GBPUSD.a": "GBPUSD",
+  "NZDUSD.a": "NZDUSD",
+  "EURNZD.a": "EURNZD",
+  "EURGBP.a": "EURGBP",
+  "EURAUD.a": "EURAUD",
+  "AUDUSD.a": "AUDUSD",
+  "USDJPY.a": "USDJPY",
+  "EURCAD.a": "EURCAD",
+  "USDCAD.a": "USDCAD",
+  "EURCHF.a": "EURCHF",
+  "EURJPY.a": "EURJPY",
   // Aggiungi altre coppie simbolo:nuovo valore qui
 };
 
