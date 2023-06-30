@@ -5,8 +5,6 @@ function calculateAssets(unifiedData) {
   const assetsMap = {};
   // Definisci una mappa di simboli originali ai nuovi simboli
   const symbolMap = {
-    "NatGas.r": "NATGAS",
-    "SpotCrude.r": "CRUDEOIL",
     /*     oldSymbol2: "newSymbol2", */
   };
 
@@ -32,12 +30,12 @@ function calculateAssets(unifiedData) {
   }
 
   const results = [];
-  let eurUsdBid_1 = 0;
-  let eurUsdBid_2 = 0;
-  let eurCadBid_1 = 0;
-  let eurCadBid_2 = 0;
-  let eurJpyBid_1 = 0;
-  let eurJpyBid_2 = 0;
+  let eurUsdBid = 0;
+  let eurUsdAsk = 0;
+  let eurCadBid = 0;
+  let eurCadAsk = 0;
+  let eurJpyBid = 0;
+  let eurJpyAsk = 0;
 
   // mappo gli asset per accedere ai valori specifici
   for (let asset in assetsMap) {
@@ -51,18 +49,18 @@ function calculateAssets(unifiedData) {
           const broker2Data = assetData[j];
           // Salva il bid di EURUSD
           if (asset.includes("EURUSD")) {
-            eurUsdBid_1 = broker1Data.bid;
-            eurUsdBid_2 = broker2Data.bid;
+            eurUsdBid = broker1Data.bid;
+            eurUsdAsk = broker1Data.ask;
           }
           // Salva il bid di EURCAD
           if (asset.includes("EURCAD")) {
-            eurCadBid_1 = broker1Data.bid;
-            eurCadBid_2 = broker2Data.bid;
+            eurCadBid = broker1Data.bid;
+            eurCadAsk = broker2Data.bid;
           }
 
           if (asset.includes("EURJPY")) {
-            eurJpyBid_1 = broker1Data.bid;
-            eurJpyBid_2 = broker2Data.bid;
+            eurJpyBid = broker1Data.bid;
+            eurJpyAsk = broker1Data.ask;
           }
         }
       }
@@ -103,21 +101,26 @@ function calculateAssets(unifiedData) {
 
           let {
             leverage,
+            lotto_std,
             pipValue1,
             pipValue2,
             valore_lotto_broker1,
             valore_lotto_broker2,
+            broker_1_valore_spread_long,
+            broker_1_valore_spread_short,
+            broker_2_valore_spread_long,
+            broker_2_valore_spread_short,
           } = calcolaValori(
             asset,
-            eurUsdBid_1,
-            eurUsdBid_2,
+            eurUsdBid,
+            eurUsdAsk,
             eurGbp,
-            eurJpyBid_1,
-            eurJpyBid_2,
+            eurJpyBid,
+            eurJpyAsk,
             eurAud,
             eurNzd,
-            eurCadBid_1,
-            eurCadBid_2,
+            eurCadBid,
+            eurCadAsk,
             usdEur,
             broker1Data,
             broker2Data
@@ -131,12 +134,16 @@ function calculateAssets(unifiedData) {
             broker_1_nome: broker1Data.broker,
             broker_1_Bid: broker1Data.bid,
             broker_1_spread: spread1,
+            broker_1_valore_spread_long,
+            broker_1_valore_spread_short,
             broker_1_valore_del_pip: pipValue1,
             broker_1_valore_lotto: valore_lotto_broker1,
 
             broker_2_nome: broker2Data.broker,
             broker_2_Bid: broker2Data.bid,
             broker_2_spread: spread2,
+            broker_2_valore_spread_long,
+            broker_2_valore_spread_short,
             boroker_2_valore_del_pip: pipValue2,
             broker_2_valore_lotto: valore_lotto_broker2,
           });

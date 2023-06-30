@@ -42,21 +42,29 @@ export class PageMatcherComponent implements OnInit {
     });
   }
 
-  moneyAmount = 0;
+  moneyAmount = 0.01;
+
+  onInputChange(event: any) {
+    if (event.target.value < 0.01) {
+      this.moneyAmount = 0.01;
+    } else {
+      this.moneyAmount = event.target.value;
+    }
+  }
 
   calculateProfitLoss(trade: any, moneyAmount: any): number {
     return (
-      -(trade.broker_1_valore_del_pip + trade.boroker_2_valore_del_pip) *
+      -(trade.broker_1_valore_spread_long + trade.broker_2_valore_spread_long) *
       moneyAmount
     );
   }
 
   calculateSpreadBroker1(trade: any, moneyAmount: any): number {
-    return trade.broker_1_valore_del_pip * moneyAmount;
+    return trade.broker_1_valore_spread_long * moneyAmount;
   }
 
   calculateSpreadBroker2(trade: any, moneyAmount: any): number {
-    return trade.boroker_2_valore_del_pip * moneyAmount;
+    return trade.broker_2_valore_spread_long * moneyAmount;
   }
 
   calculateMarginBroker1(trade: any, moneyAmount: any): number {
@@ -81,5 +89,32 @@ export class PageMatcherComponent implements OnInit {
           ? trade.asset.toLowerCase().includes(filterAsset.toLowerCase())
           : true)
     );
+  }
+
+  sortField: string = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
+  // Aggiungi questa funzione al tuo componente
+  onSort(field: string) {
+    if (this.sortField === field) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortField = field;
+      this.sortDirection = 'asc';
+    }
+
+    this.filteredTrades.sort((a, b) => {
+      const valA = this.calculateProfitLoss(a, this.moneyAmount);
+      const valB = this.calculateProfitLoss(b, this.moneyAmount);
+
+      let comparison = 0;
+      if (valA > valB) {
+        comparison = 1;
+      } else if (valA < valB) {
+        comparison = -1;
+      }
+
+      return this.sortDirection === 'desc' ? comparison * -1 : comparison;
+    });
   }
 }

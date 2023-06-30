@@ -14,10 +14,37 @@ const wss = new WebSocket.Server({ noServer: true });
 let unifiedData = {};
 let buffer = {};
 
+// Mappa dei simboli originali ai nuovi simboli
+const symbolMap = {
+  "NatGas.r": "NATGAS",
+  "SpotCrude.r": "CRUDEOIL",
+  "EURUSD.r": "EURUSD",
+  "GBPUSD.r": "GBPUSD",
+  "NZDUSD.r": "NZDUSD",
+  "EURNZD.r": "EURNZD",
+  "EURGBP.r": "EURGBP",
+  "EURAUD.r": "EURAUD",
+  "AUDUSD.r": "AUDUSD",
+  "USDJPY.r": "USDJPY",
+  "EURCAD.r": "EURCAD",
+  "USDCAD.r": "USDCAD",
+  "EURCHF.r": "EURCHF",
+  "EURJPY.r": "EURJPY",
+  // Aggiungi altre coppie simbolo:nuovo valore qui
+};
+
 wss.on("connection", function connection(ws) {
   ws.on("message", function incoming(message) {
     let parsedMessage = JSON.parse(message);
+
+    // Se il simbolo è nella mappa, cambialo
+    if (symbolMap.hasOwnProperty(parsedMessage.symbol)) {
+      parsedMessage.symbol = symbolMap[parsedMessage.symbol];
+    }
+
     let key = parsedMessage.broker + ":" + parsedMessage.symbol;
+
+    console.log(parsedMessage.symbol);
 
     buffer[key] = {
       ...parsedMessage,

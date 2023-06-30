@@ -20,14 +20,17 @@
         [formControl]="filterAssetControl"
       />
     </div>
+
     <div class="col-3 mb-3">
       <label for="moneyInput" class="form-label">Inserisci lottaggio</label>
       <input
         type="number"
+        min="0.01"
         class="form-control"
         id="moneyInput"
         placeholder="Inserisci un importo in denaro"
         [(ngModel)]="moneyAmount"
+        (change)="onInputChange($event)"
       />
     </div>
   </div>
@@ -45,7 +48,18 @@
         <th>Margine richiesto broker 2</th>
         <th>Spread broker 1</th>
         <th>Spread broker 2</th>
-        <th>Profitto/Perdita</th>
+        <th (click)="onSort('profitto_perdita')">
+          Profitto/Perdita
+          <span *ngIf="sortField === 'profitto_perdita'">
+            <i
+              class="bi"
+              [ngClass]="{
+                'bi-caret-up-fill': sortDirection === 'asc',
+                'bi-caret-down-fill': sortDirection === 'desc'
+              }"
+            ></i>
+          </span>
+        </th>
       </tr>
     </thead>
     <tbody>
@@ -68,13 +82,13 @@
           {{ calculateMarginBroker2(trade, moneyAmount) | number : "1.2-2" }} €
         </td>
         <td>
-          {{ calculateSpreadBroker1(trade, moneyAmount) | number : "1.6-6" }} €
+          {{ calculateSpreadBroker1(trade, moneyAmount) | number : "1.2-2" }} €
         </td>
         <td>
-          {{ calculateSpreadBroker2(trade, moneyAmount) | number : "1.6-6" }} €
+          {{ calculateSpreadBroker2(trade, moneyAmount) | number : "1.2-2" }} €
         </td>
         <td>
-          {{ calculateProfitLoss(trade, moneyAmount) | number : "1.6-6" }} €
+          {{ calculateProfitLoss(trade, moneyAmount) | number : "1.2-2" }} €
         </td>
       </tr>
     </tbody>
